@@ -1,6 +1,7 @@
 version: '3'
 services:
   restyoursoap:
+    image: restyoursoap_back
     container_name: restyoursoap_back
     build: .
     ports:
