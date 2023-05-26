@@ -1,6 +1,7 @@
 package co.restursoap.restyoursoap.controller;
 
 import co.restursoap.restyoursoap.service.SOAPservice;
+import org.javatuples.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -39,14 +40,14 @@ public class SOAPController {
     public ResponseEntity<?> getSOAPTranslated(@RequestParam("file") MultipartFile multipartFile)
             throws IOException{
         String xml = convertInputStreamToString(multipartFile.getInputStream());
-        String out = sService.translateToOpenAPI(xml);
+        Pair<String, String> out = sService.translateToOpenAPI(xml);
 
-        String headerValue = "attachment; filename=\"" + "api.yaml" + "\"";
+        String headerValue = "attachment; filename=\"" + out.getValue0() + ".yaml" + "\"";
 
         return  ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType("text/yaml"))
                 .header(HttpHeaders.CONTENT_DISPOSITION, headerValue)
-                .body(out);
+                .body(out.getValue1());
 
     }
 }

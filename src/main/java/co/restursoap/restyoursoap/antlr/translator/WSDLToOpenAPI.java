@@ -13,6 +13,10 @@ public class WSDLToOpenAPI extends XMLParserBaseListener {
                  "\nservers:\n" + listServers((HashSet<String>) apiDefinition.get("servers"));
      }
 
+     public String getServiceName(){
+         return (String) apiDefinition.get("title");
+     }
+
      /* Data structures for store translation */
     HashMap<String, Object> apiDefinition = new HashMap<>();
      // Flags

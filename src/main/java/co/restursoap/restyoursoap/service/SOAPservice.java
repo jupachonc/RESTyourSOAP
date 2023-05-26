@@ -6,11 +6,12 @@ import co.restursoap.restyoursoap.antlr.translator.WSDLToOpenAPI;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
 import org.springframework.stereotype.Service;
+import org.javatuples.Pair;
 
 
 @Service
 public class SOAPservice {
-    public String translateToOpenAPI(String wsdl){
+    public Pair<String, String> translateToOpenAPI(String wsdl){
         // Generate Lexer from WSDL String
         XMLLexer baseLexer = new XMLLexer(CharStreams.fromString(wsdl));
 
@@ -28,7 +29,7 @@ public class SOAPservice {
         // Walk the tree created during the parse, trigger callbacks
         walker.walk(translator, tree);
 
-        return translator.getOutput();
+        return new Pair<>(translator.getServiceName(), translator.getOutput());
 
     }
 }
