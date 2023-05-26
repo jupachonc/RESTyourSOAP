@@ -7,7 +7,9 @@ import java.util.*;
 
 public class WSDLToOpenAPI extends XMLParserBaseListener {
      public String getOutput(){
-         return "name: " + apiDefinition.get("title") +
+
+         return "openapi: \"3.0.0\"\n"
+                 + "info:\n\tname: " + apiDefinition.get("title") +
                  "\nservers:\n" + listServers((HashSet<String>) apiDefinition.get("servers"));
      }
 
