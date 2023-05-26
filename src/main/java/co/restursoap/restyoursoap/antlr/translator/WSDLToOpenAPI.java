@@ -3,13 +3,12 @@ package co.restursoap.restyoursoap.antlr.translator;
 import co.restursoap.restyoursoap.antlr.gen.XMLParser;
 import co.restursoap.restyoursoap.antlr.gen.XMLParserBaseListener;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class WSDLToOpenAPI extends XMLParserBaseListener {
      public String getOutput(){
-         return "name: " + apiDefinition.get("title");
+         return "name: " + apiDefinition.get("title") +
+                 "\nservers:\n" + listServers((HashSet<String>) apiDefinition.get("servers"));
      }
 
      /* Data structures for store translation */
@@ -18,6 +17,13 @@ public class WSDLToOpenAPI extends XMLParserBaseListener {
     private Boolean insideDefinitions = false;
     private Boolean insideService = false;
 
+    private String listServers(HashSet<String> list){
+        StringBuilder out = new StringBuilder();
+        for(String url:list){
+            out.append("\t- url: ").append(url).append("\n");
+        }
+        return out.toString();
+    }
      private String getTagType(String tag){
          List<String> tagTypes = Arrays.asList("types", "message", "portType", "binding", "definitions",
                                                 "address", "service");
@@ -55,6 +61,18 @@ public class WSDLToOpenAPI extends XMLParserBaseListener {
              case "service":
                  insideService = true;
                  apiDefinition.put("title", mapAttributes(ctx.attribute()).get("name"));
+                 break;
+             case "address":
+                 if(insideService){
+                     String location = (String) mapAttributes(ctx.attribute()).get("location");
+                     if(apiDefinition.containsKey("servers")){
+                         ((HashSet<String>) apiDefinition.get("servers")).add(location);
+                     } else {
+                         HashSet<String> servers = new HashSet<>();
+                         servers.add(location);
+                         apiDefinition.put("servers", servers);
+                     }
+                 }
                  break;
              default:
                  //System.out.println(elementTag);
