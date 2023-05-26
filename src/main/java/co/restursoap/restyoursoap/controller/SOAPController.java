@@ -1,16 +1,31 @@
 package co.restursoap.restyoursoap.controller;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import co.restursoap.restyoursoap.service.SOAPservice;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/soap")
 public class SOAPController {
+
+    @Autowired
+    SOAPservice sService;
+    private static String convertInputStreamToString(InputStream inputStream)
+            throws IOException {
+
+        return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+    }
     @GetMapping(path= "/ping")
     public Map<String, String> ping(){
         return new HashMap<>(){
@@ -21,7 +36,17 @@ public class SOAPController {
     }
 
     @PostMapping(path = "/toREST")
-    public Map getSOAPTranslated(){
-        return new HashMap();
+    public ResponseEntity<?> getSOAPTranslated(@RequestParam("file") MultipartFile multipartFile)
+            throws IOException{
+        String xml = convertInputStreamToString(multipartFile.getInputStream());
+        String out = sService.translateToOpenAPI(xml);
+
+        String headerValue = "attachment; filename=\"" + "api.yaml" + "\"";
+
+        return  ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType("text/yaml"))
+                .header(HttpHeaders.CONTENT_DISPOSITION, headerValue)
+                .body(out);
+
     }
 }
