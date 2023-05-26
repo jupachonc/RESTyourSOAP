@@ -1,0 +1,56 @@
+<?xml version='1.0' encoding='utf-8'?>
+<definitions name="AsignaturasService" targetNamespace="http://tempuri.org/"
+    xmlns="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+    xmlns:tns="http://tempuri.org/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <types>
+        <xsd:schema elementFormDefault="qualified" targetNamespace="http://tempuri.org/">
+            <xsd:element name="GetAsignaturas">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element minOccurs="0" name="codigo_asignatura" type="xsd:int" />
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="GetAsignaturasResponse">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element minOccurs="0" name="GetAsignaturasResult" nillable="true" type="xsd:int" />
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+        </xsd:schema>
+    </types>
+    <message name="GetAsignaturasSoapIn">
+        <part name="parameters" element="tns:GetAsignaturas" />
+    </message>
+    <message name="GetAsignaturasSoapOut">
+        <part name="parameters" element="tns:GetAsignaturasResponse" />
+    </message>
+    <portType name="AsignaturasSoap">
+        <operation name="GetAsignaturas">
+            <input message="tns:GetAsignaturasSoapIn" />
+            <output message="tns:GetAsignaturasSoapOut" />
+        </operation>
+    </portType>
+    <binding name="AsignaturasSoap" type="tns:AsignaturasSoap">
+        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http" />
+        <operation name="GetAsignaturas">
+            <soap:operation soapAction="http://tempuri.org/GetAsignaturas" style="document" />
+            <input>
+                <soap:body use="literal" />
+            </input>
+            <output>
+                <soap:body>
+                    <soap:encodingStyle value="http://schemas.xmlsoap.org/soap/encoding/" />
+                </soap:body>
+            </output>
+        </operation>
+    </binding>
+    <service name="AsignaturasService">
+        <port name="AsignaturasSoap" binding="tns:AsignaturasSoap">
+            <soap:address location="http://localhost:3000/soap/asignaturas" />
+        </port>
+    </service>
+</definitions>
