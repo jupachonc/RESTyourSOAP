@@ -36,6 +36,11 @@ public class WSDLToOpenAPI extends XMLParserBaseListener {
          components.put("schemas", apiDefinition.get("elements"));
          openApiDefinition.put("components", components );
 
+         /*
+            Paths
+         */
+         openApiDefinition.put("paths", apiDefinition.get("paths"));
+
 //         String s = "openapi: \"3.0.0\"\n";
 //                 + "info:\n\ttitle: " + apiDefinition.get("title") + "\n\tversion: 0.0.1" +
 //                 "\nservers:\n" + listServers((HashSet<String>) apiDefinition.get("servers")) +
@@ -51,13 +56,32 @@ public class WSDLToOpenAPI extends XMLParserBaseListener {
      }
 
      public String getPackageJSON(){
-         SortedMap<String, Object> pMap = new TreeMap<String, Object>();
+         LinkedHashMap<String, Object> pMap = new LinkedHashMap<>();
          pMap.put("name", apiDefinition.get("title"));
          pMap.put("version", "0.0.1");
          pMap.put("description", "");
          pMap.put("main", "index.js");
+         /*
+            Scripts
+         */
+         LinkedHashMap<String, String> scripts = new LinkedHashMap<>();
+         scripts.put("test", "echo \"Error: no test specified\" && exit 1");
+         scripts.put("start", "node index.js");
+         pMap.put("scripts", scripts);
+
+         pMap.put("author", "");
+         pMap.put("license", "ISC");
+
+         /*
+            Depedencies
+         */
+         LinkedHashMap<String, String> dependencies = new LinkedHashMap<>();
+         dependencies.put("express", "^4.18.2");
+         pMap.put("dependencies", dependencies);
+
+         // Generate Output JSOn
          JSONObject pjson = new JSONObject(pMap);
-         return pjson.toString();
+         return pjson.toString(2);
      }
 
      public String getServiceName(){
@@ -72,8 +96,13 @@ public class WSDLToOpenAPI extends XMLParserBaseListener {
     private Boolean insideType = false;
     private Boolean insideSchema = false;
     private Boolean insideElement = false;
+    private Boolean insidePortType = false;
+    private Boolean insideOperation = false;
     private Boolean insideComplexType = false;
     private String mainElement = "";
+    private String operationName = "";
+    private LinkedHashMap<String, Object> messagesMap = new LinkedHashMap<>();
+    private String message = "";
     private Integer tabCounter = 0;
 
     private String listServers(HashSet<String> list){
@@ -95,7 +124,8 @@ public class WSDLToOpenAPI extends XMLParserBaseListener {
     }
      private String getTagType(String tag){
          List<String> tagTypes = Arrays.asList("types", "message", "portType", "binding", "definitions",
-                                                "address", "service", "element", "schema", "complexType");
+                                                "address", "service", "element", "schema", "complexType", "part", "operation",
+                                                "input", "output");
 
          for(String tagType:tagTypes){
              if(tag.contains(tagType)) return tagType;
@@ -182,8 +212,60 @@ public class WSDLToOpenAPI extends XMLParserBaseListener {
                  insideType = true;
                  break;
              case "message":
+                 message = (String) mapAttributes(ctx.attribute()).get("name");
+                 HashMap<String, Object> stringContent = new HashMap<>();
+                 stringContent.put("application/json", new HashMap<>());
+                 HashMap<String, Object> content = new HashMap<>();
+                 content.put("content", stringContent);
+                 messagesMap.put(message, content);
+                 break;
+             case "part":
+                 String elementsName = (String) mapAttributes(ctx.attribute()).get("element");
+                 String[] spPart = elementsName.split(":");
+                 HashMap<String, Object> schemaRoute = new HashMap<>();
+                 schemaRoute.put("$ref", "#/components/schemas/" + spPart[1]);
+                 ((HashMap<String, Object>) ((HashMap<String, Object>) ((HashMap<String, Object>) messagesMap.get(message)).get("content")).get("application/json")).put("schema", schemaRoute);
                  break;
              case "portType":
+                 insidePortType = true;
+                 break;
+             case "operation":
+                 if(insidePortType){
+                     insideOperation = true;
+                     operationName = (String) mapAttributes(ctx.attribute()).get("name");
+                     if(apiDefinition.containsKey("paths")){
+                         ((HashMap<String, Object>) apiDefinition.get("paths")).put(operationName, new HashMap<>());
+                     } else {
+                         HashMap<String, Object> paths = new HashMap<>();
+                         paths.put(operationName, new HashMap<>());
+                         apiDefinition.put("paths", paths);
+                     }
+                 }
+                 break;
+             case "input":
+                 if(insideOperation){
+                     String inputMessage = (String) mapAttributes(ctx.attribute()).get("message");
+                     String[] spMessage = inputMessage.split(":");
+                     HashMap<String, Object> post = new HashMap<>();
+                     post.put("requestBody", messagesMap.get(spMessage[1]));
+                     ((HashMap<String, Object>) ((HashMap<String, Object>) apiDefinition.get("paths")).get(operationName)).put("post", post);
+                 }
+                 break;
+             case "output":
+                 if(insideOperation){
+                     String outputMessage = (String) mapAttributes(ctx.attribute()).get("message");
+                     String[] spOutputMessage = outputMessage.split(":");
+                     HashMap<String, Object> response = new HashMap<>();
+                     response.put("200", messagesMap.get(spOutputMessage[1]));
+                     HashMap<String, Object> get = new HashMap<>();
+                     get.put("responses", response);
+                     if(!((HashMap<String, Object>) ((HashMap<String, Object>) apiDefinition.get("paths")).get(operationName)).containsKey("post")){
+                         ((HashMap<String, Object>) ((HashMap<String, Object>) apiDefinition.get("paths")).get(operationName)).put("get", get);
+                     }
+                     else{
+                         ((HashMap<String, Object>) ((HashMap<String, Object>) ((HashMap<String, Object>) apiDefinition.get("paths")).get(operationName)).get("post")).put("responses", response);
+                     }
+                 }
                  break;
              case "service":
                  insideService = true;
@@ -249,7 +331,7 @@ public class WSDLToOpenAPI extends XMLParserBaseListener {
         super.exitElement(ctx);
         String elementTag = ctx.Name(0).toString();
         switch (getTagType(elementTag)) {
-            case "element", "complexType" -> {
+            case "element", "complexType":
                 String name = (String) mapAttributes(ctx.attribute()).get("name");
                 if (((HashMap<String, Object>) apiDefinition.get("elements")).containsKey(name)) {
                     insideElement = false;
@@ -260,7 +342,13 @@ public class WSDLToOpenAPI extends XMLParserBaseListener {
                 else if (Objects.equals(getTagType(elementTag), "element")){
                     //TODO: Al finalizar el elemento mirar si es el que debe tener el type:object mirando si tiene content o en defecto agregar una identación
                 }
-            }
+                break;
+            case "operation":
+                insideOperation = false;
+                break;
+            case "portType":
+                insidePortType = false;
+                break;
         }
     }
 }
