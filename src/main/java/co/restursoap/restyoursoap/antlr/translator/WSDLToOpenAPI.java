@@ -56,13 +56,32 @@ public class WSDLToOpenAPI extends XMLParserBaseListener {
      }
 
      public String getPackageJSON(){
-         SortedMap<String, Object> pMap = new TreeMap<String, Object>();
+         LinkedHashMap<String, Object> pMap = new LinkedHashMap<>();
          pMap.put("name", apiDefinition.get("title"));
          pMap.put("version", "0.0.1");
          pMap.put("description", "");
          pMap.put("main", "index.js");
+         /*
+            Scripts
+         */
+         LinkedHashMap<String, String> scripts = new LinkedHashMap<>();
+         scripts.put("test", "echo \"Error: no test specified\" && exit 1");
+         scripts.put("start", "node index.js");
+         pMap.put("scripts", scripts);
+
+         pMap.put("author", "");
+         pMap.put("license", "ISC");
+
+         /*
+            Depedencies
+         */
+         LinkedHashMap<String, String> dependencies = new LinkedHashMap<>();
+         dependencies.put("express", "^4.18.2");
+         pMap.put("dependencies", dependencies);
+
+         // Generate Output JSOn
          JSONObject pjson = new JSONObject(pMap);
-         return pjson.toString();
+         return pjson.toString(2);
      }
 
      public String getServiceName(){
