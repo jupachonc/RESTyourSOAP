@@ -26,7 +26,9 @@ public class WSDLToOpenAPI extends XMLParserBaseListener {
     private Boolean insideType = false;
     private Boolean insideSchema = false;
     private Boolean insideElement = false;
+    private Boolean insideComplexType = false;
     private String mainElement = "";
+    private Integer tabCounter = 0;
 
     private String listServers(HashSet<String> list){
         StringBuilder out = new StringBuilder();
@@ -40,7 +42,7 @@ public class WSDLToOpenAPI extends XMLParserBaseListener {
         for(String name:list.keySet()){
             out.append("\t\t").append(name).append(":\n\t\t\ttype: object\n\t\t\tproperties:\n");
             for(String element:((HashMap<String,Object>) list.get(name)).keySet()){
-                out.append("\t\t\t\t").append(element).append(": \n\t\t\t\t\t").append(((HashMap<String,Object>) list.get(name)).get(element)).append("\n");
+                out.append("\t\t\t\t").append(element).append(": \n").append(((HashMap<String,Object>) list.get(name)).get(element)).append("\n");
             }
         }
         return out.toString();
@@ -80,6 +82,7 @@ public class WSDLToOpenAPI extends XMLParserBaseListener {
 
     private String reformatAttributes(String attributeName, String attributeContent){
         String returnValue = "";
+        String tabs = "\t".repeat(tabCounter+4);
         switch (attributeName){
             case "minOccurs":
                 if (!Objects.equals(attributeContent, "unbounded")){
@@ -105,7 +108,7 @@ public class WSDLToOpenAPI extends XMLParserBaseListener {
                             break;
                         case "float":
                             newContent = "number";
-                            format = "\nformat: float";
+                            format = "\n"+ tabs + "format: float";
                             break;
                         case "boolean":
                             newContent = "integer";
@@ -118,7 +121,7 @@ public class WSDLToOpenAPI extends XMLParserBaseListener {
                 }
                 break;
         }
-        return returnValue;
+        return tabs + returnValue;
     }
 
     @Override
@@ -160,9 +163,13 @@ public class WSDLToOpenAPI extends XMLParserBaseListener {
                      if (mapAttributes(ctx.attribute()).containsKey("name") && !insideElement){
                          SaveMainElement(ctx);
                      }
-                     else if(mapAttributes(ctx.attribute()).containsKey("name") && insideElement){
-                         //TODO: Ver si esto se debe poner o no
+                     else if(!mapAttributes(ctx.attribute()).containsKey("name") && insideElement){
+                         Set elementList = ((HashMap<String, Object>) ((HashMap<String, Object>) apiDefinition.get("elements")).get(mainElement)).keySet();
+                         if (!elementList.isEmpty()){
+                             insideComplexType = true;
+                         }
                      }
+                     tabCounter++;
                  }
                  break;
              case "element":
@@ -178,7 +185,7 @@ public class WSDLToOpenAPI extends XMLParserBaseListener {
                                  inElement.append(reformatAttributes(attribute, (String) elementAttributes.get(attribute))).append("\n");
                              }
                          }
-                         ((HashMap<String, Object>) ((HashMap<String, Object>) apiDefinition.get("elements")).get(mainElement)).put((String)elementAttributes.get("name"), inElement);
+                         ((HashMap<String, Object>) ((HashMap<String, Object>) apiDefinition.get("elements")).get(mainElement)).put((String) elementAttributes.get("name"), inElement);
                      }
                  }
                  break;
@@ -198,6 +205,12 @@ public class WSDLToOpenAPI extends XMLParserBaseListener {
                 String name = (String) mapAttributes(ctx.attribute()).get("name");
                 if (((HashMap<String, Object>) apiDefinition.get("elements")).containsKey(name)) {
                     insideElement = false;
+                }
+                if (Objects.equals(getTagType(elementTag), "complexType")){
+                    tabCounter--;
+                }
+                else if (Objects.equals(getTagType(elementTag), "element")){
+                    //TODO: Al finalizar el elemento mirar si es el que debe tener el type:object mirando si tiene content o en defecto agregar una identación
                 }
             }
         }
