@@ -50,4 +50,19 @@ public class SOAPController {
                 .body(out.getValue1());
 
     }
+
+    @PostMapping(path = "/getProject")
+    public ResponseEntity<?> getProject(@RequestParam("file") MultipartFile multipartFile)
+            throws IOException{
+        String xml = convertInputStreamToString(multipartFile.getInputStream());
+        Pair<String, String> out = sService.getProject(xml);
+
+        String headerValue = "attachment; filename=\"" + "package.json" + "\"";
+
+        return  ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType("application/json"))
+                .header(HttpHeaders.CONTENT_DISPOSITION, headerValue)
+                .body(out.getValue1());
+
+    }
 }

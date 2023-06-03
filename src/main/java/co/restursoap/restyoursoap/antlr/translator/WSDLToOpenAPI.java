@@ -2,6 +2,8 @@ package co.restursoap.restyoursoap.antlr.translator;
 
 import co.restursoap.restyoursoap.antlr.gen.XMLParser;
 import co.restursoap.restyoursoap.antlr.gen.XMLParserBaseListener;
+import com.google.common.base.Joiner;
+import org.json.JSONObject;
 
 import java.util.*;
 
@@ -13,6 +15,16 @@ public class WSDLToOpenAPI extends XMLParserBaseListener {
                  "\nservers:\n" + listServers((HashSet<String>) apiDefinition.get("servers")) +
                  "\ncomponents:\n\tschemas:\n" + listElements((HashMap<String, Object>) apiDefinition.get("elements"));
          return s.replace("\t", "  ");
+     }
+
+     public String getPackageJSON(){
+         SortedMap<String, Object> pMap = new TreeMap<String, Object>();
+         pMap.put("name", apiDefinition.get("title"));
+         pMap.put("version", "0.0.1");
+         pMap.put("description", "");
+         pMap.put("main", "index.js");
+         JSONObject pjson = new JSONObject(pMap);
+         return pjson.toString();
      }
 
      public String getServiceName(){
