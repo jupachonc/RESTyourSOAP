@@ -175,7 +175,10 @@ public class WSDLToOpenAPI extends XMLParserBaseListener {
                             newContent = "string";
                             break;
                     }
-                    returnValue = "type: " + newContent + format;
+                    returnValue = "type:" + newContent + format;
+                }
+                else if (Objects.equals(spType[0], "tns")){
+                    returnValue = "$ref:#/components/schemas/" + spType[1];
                 }
                 break;
         }
@@ -296,7 +299,14 @@ public class WSDLToOpenAPI extends XMLParserBaseListener {
                                 for (String newAttr:attrs){
                                     if (!Objects.equals(newAttr, "")){
                                         String[] thisAttr = newAttr.split(":");
-                                        inElement.put(thisAttr[0], thisAttr[1]);
+                                        if (!Objects.equals(thisAttr[0], "$ref")){
+                                            inElement.put(thisAttr[0], thisAttr[1]);
+                                        }
+                                        else {
+                                            HashMap<String, Object> schema = new HashMap<>();
+                                            schema.put(thisAttr[0], thisAttr[1]);
+                                            inElement.put("schema", schema);
+                                        }
                                     }
                                 }
                             }
