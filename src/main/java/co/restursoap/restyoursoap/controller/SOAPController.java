@@ -2,6 +2,7 @@ package co.restursoap.restyoursoap.controller;
 
 import co.restursoap.restyoursoap.service.SOAPservice;
 import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletResponse;
 import org.javatuples.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -56,16 +57,21 @@ public class SOAPController {
     }
 
     @PostMapping(path = "/getProject", produces = "application/zip")
-    public ResponseEntity<?> getProject(@RequestParam("file") MultipartFile multipartFile,
-                                        ServletOutputStream responseOutputStream)
+    public void getProject(@RequestParam("file") MultipartFile multipartFile,
+                           HttpServletResponse response)
             throws IOException{
         String xml = convertInputStreamToString(multipartFile.getInputStream());
         Pair<String, String> out = sService.getProject(xml);
 
+        String headerValue = "attachment; filename=\"" + out.getValue0() + ".zip" + "\"";
+
+        response.setContentType("application/zip");
+        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, headerValue);
+
         /*
             Create Zip
         */
-        ZipOutputStream project = new ZipOutputStream(responseOutputStream);
+        ZipOutputStream project = new ZipOutputStream(response.getOutputStream());
         // Create package.json
         byte[] packagejson = out.getValue1().getBytes();
         ZipEntry pjsonEntry = new ZipEntry("package.json");
@@ -81,12 +87,6 @@ public class SOAPController {
         project.closeEntry();
         project.close();
 
-        String headerValue = "attachment; filename=\"" + out.getValue0() + ".zip" + "\"";
-
-        return  ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType("application/zip"))
-                .header(HttpHeaders.CONTENT_DISPOSITION, headerValue)
-                .body(out.getValue1());
 
     }
 }
