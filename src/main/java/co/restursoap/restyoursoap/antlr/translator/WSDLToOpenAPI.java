@@ -2,7 +2,6 @@ package co.restursoap.restyoursoap.antlr.translator;
 
 import co.restursoap.restyoursoap.antlr.gen.XMLParser;
 import co.restursoap.restyoursoap.antlr.gen.XMLParserBaseListener;
-import com.google.common.base.Joiner;
 import org.json.JSONObject;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
@@ -10,11 +9,10 @@ import org.yaml.snakeyaml.Yaml;
 import java.util.*;
 
 public class WSDLToOpenAPI extends XMLParserBaseListener {
-    public String getOutput() {
+    public String getOutput(boolean inYAML) {
 
         LinkedHashMap<String, Object> openApiDefinition = new LinkedHashMap<>();
         openApiDefinition.put("openapi", "3.0.0");
-
          /*
             Information
          */
@@ -40,19 +38,18 @@ public class WSDLToOpenAPI extends XMLParserBaseListener {
             Paths
          */
         openApiDefinition.put("paths", apiDefinition.get("paths"));
+        if (inYAML) {
+            DumperOptions options = new DumperOptions();
+            options.setIndent(2);
+            options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+            Yaml yaml = new Yaml(options);
 
-//         String s = "openapi: \"3.0.0\"\n";
-//                 + "info:\n\ttitle: " + apiDefinition.get("title") + "\n\tversion: 0.0.1" +
-//                 "\nservers:\n" + listServers((HashSet<String>) apiDefinition.get("servers")) +
-//                 "\ncomponents:\n\tschemas:\n" + listElements((HashMap<String, Object>) apiDefinition.get("elements"));
-        //return s.replace("\t", "  ");
-        DumperOptions options = new DumperOptions();
-        options.setIndent(2);
-        options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+            return yaml.dump(openApiDefinition);
+        } else {
+            JSONObject jsonDef = new JSONObject(openApiDefinition);
+            return jsonDef.toString();
 
-        Yaml yaml = new Yaml(options);
-
-        return yaml.dump(openApiDefinition);
+        }
     }
 
     public String getPackageJSON() {
@@ -104,25 +101,6 @@ public class WSDLToOpenAPI extends XMLParserBaseListener {
     private LinkedHashMap<String, Object> messagesMap = new LinkedHashMap<>();
     private String message = "";
     private String lastElement = "";
-
-    private String listServers(HashSet<String> list) {
-        StringBuilder out = new StringBuilder();
-        for (String url : list) {
-            out.append("\t- url: ").append(url).append("\n");
-        }
-        return out.toString();
-    }
-
-    private String listElements(HashMap<String, Object> list) {
-        StringBuilder out = new StringBuilder();
-        for (String name : list.keySet()) {
-            out.append("\t\t").append(name).append(":\n\t\t\ttype: object\n\t\t\tproperties:\n");
-            for (String element : ((HashMap<String, Object>) list.get(name)).keySet()) {
-                out.append("\t\t\t\t").append(element).append(": \n").append(((HashMap<String, Object>) list.get(name)).get(element)).append("\n");
-            }
-        }
-        return out.toString();
-    }
 
     private String getTagType(String tag) {
         List<String> tagTypes = Arrays.asList("types", "message", "portType", "binding", "definitions",
