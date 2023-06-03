@@ -96,7 +96,10 @@ public class WSDLToOpenAPI extends XMLParserBaseListener {
                 code.append(method);
                 code.append("('");
                 code.append(path);
-                code.append("', function(req, res) {\n\t//TODO\n\t//Implement your Method Here");
+                code.append("', function(req, res) {\n\t//TODO\n\t//Implement your Method Here\n");
+                code.append("res.json({ message: 'This is ");
+                code.append(path);
+                code.append("method' })");
                 code.append("\n})\n\n");
 
             }
