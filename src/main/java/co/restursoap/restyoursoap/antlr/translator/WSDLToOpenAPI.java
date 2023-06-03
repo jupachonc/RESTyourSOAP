@@ -11,7 +11,7 @@ public class WSDLToOpenAPI extends XMLParserBaseListener {
          return "openapi: \"3.0.0\"\n"
                  + "info:\n  title: " + apiDefinition.get("title") + "\n  version: 0.0.1" +
                  "\nservers:\n" + listServers((HashSet<String>) apiDefinition.get("servers")) +
-                 "\n components:\n  schemas:\n" + listElements((HashMap<String,Object>) apiDefinition.get("elements"));
+                 "\ncomponents:\n  schemas:\n" + listElements((HashMap<String,Object>) apiDefinition.get("elements"));
      }
 
      public String getServiceName(){
