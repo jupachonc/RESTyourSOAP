@@ -2,16 +2,62 @@ package co.restursoap.restyoursoap.antlr.translator;
 
 import co.restursoap.restyoursoap.antlr.gen.XMLParser;
 import co.restursoap.restyoursoap.antlr.gen.XMLParserBaseListener;
+import com.google.common.base.Joiner;
+import org.json.JSONObject;
+import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.Yaml;
 
 import java.util.*;
 
 public class WSDLToOpenAPI extends XMLParserBaseListener {
      public String getOutput(){
 
-         return "openapi: \"3.0.0\"\n"
-                 + "info:\n\tname: " + apiDefinition.get("title") + "\n\tversion: 0.0.1" +
-                 "\nservers:\n" + listServers((HashSet<String>) apiDefinition.get("servers")) +
-                 "\n components:\n\tschemas:\n" + listElements((HashMap<String,Object>) apiDefinition.get("elements"));
+         LinkedHashMap<String, Object> openApiDefinition = new LinkedHashMap<>();
+         openApiDefinition.put("openapi", "3.0.0");
+         /*
+            Information
+         */
+
+         LinkedHashMap<String, Object> info = new LinkedHashMap<>();
+         info.put("title", apiDefinition.get("title"));
+         info.put("version", "0.0.1");
+
+         openApiDefinition.put("info", info);
+
+         /*
+            Servers
+         */
+         openApiDefinition.put("servers", new ArrayList<>((HashSet<?>)apiDefinition.get("servers")));
+
+         /*
+            Components
+         */
+         HashMap<String, Object> components = new HashMap<>();
+         components.put("schemas", apiDefinition.get("elements"));
+         openApiDefinition.put("components", components );
+
+//         String s = "openapi: \"3.0.0\"\n";
+//                 + "info:\n\ttitle: " + apiDefinition.get("title") + "\n\tversion: 0.0.1" +
+//                 "\nservers:\n" + listServers((HashSet<String>) apiDefinition.get("servers")) +
+//                 "\ncomponents:\n\tschemas:\n" + listElements((HashMap<String, Object>) apiDefinition.get("elements"));
+         //return s.replace("\t", "  ");
+         DumperOptions options = new DumperOptions();
+         options.setIndent(2);
+         options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+
+         Yaml yaml = new Yaml(options);
+
+         return yaml.dump(openApiDefinition);
+     }
+
+     public String getPackageJSON(){
+         SortedMap<String, Object> pMap = new TreeMap<String, Object>();
+         pMap.put("name", apiDefinition.get("title"));
+         pMap.put("version", "0.0.1");
+         pMap.put("description", "");
+         pMap.put("main", "index.js");
+         JSONObject pjson = new JSONObject(pMap);
+         return pjson.toString();
      }
 
      public String getServiceName(){
@@ -132,7 +178,7 @@ public class WSDLToOpenAPI extends XMLParserBaseListener {
                  insideDefinitions = true;
                  break;
              case "types":
-                 System.out.println("Has a type declaration");
+                 //System.out.println("Has a type declaration");
                  insideType = true;
                  break;
              case "message":
@@ -146,11 +192,13 @@ public class WSDLToOpenAPI extends XMLParserBaseListener {
              case "address":
                  if(insideService){
                      String location = (String) mapAttributes(ctx.attribute()).get("location");
+                     LinkedHashMap<String, Object> server = new LinkedHashMap<>();
+                     server.put("url", location);
                      if(apiDefinition.containsKey("servers")){
-                         ((HashSet<String>) apiDefinition.get("servers")).add(location);
+                         ((HashSet<Object>) apiDefinition.get("servers")).add(server);
                      } else {
-                         HashSet<String> servers = new HashSet<>();
-                         servers.add(location);
+                         HashSet<Object> servers = new HashSet<>();
+                         servers.add(server);
                          apiDefinition.put("servers", servers);
                      }
                  }
