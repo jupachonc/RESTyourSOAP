@@ -41,7 +41,7 @@ public class SOAPController {
         };
     }
 
-    @PostMapping(path = "/toREST")
+    @PostMapping(path = "/toYAML")
     public ResponseEntity<?> getSOAPTranslated(@RequestParam("file") MultipartFile multipartFile)
             throws IOException{
         String xml = convertInputStreamToString(multipartFile.getInputStream());
@@ -51,6 +51,21 @@ public class SOAPController {
 
         return  ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType("text/yaml"))
+                .header(HttpHeaders.CONTENT_DISPOSITION, headerValue)
+                .body(out.getValue1());
+
+    }
+
+    @PostMapping(path = "/toJSON")
+    public ResponseEntity<?> getSOAPTranslatedJSON(@RequestParam("file") MultipartFile multipartFile)
+            throws IOException{
+        String xml = convertInputStreamToString(multipartFile.getInputStream());
+        Pair<String, String> out = sService.translateToOpenAPIJSON(xml);
+
+        String headerValue = "attachment; filename=\"" + out.getValue0() + ".json" + "\"";
+
+        return  ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType("application/json"))
                 .header(HttpHeaders.CONTENT_DISPOSITION, headerValue)
                 .body(out.getValue1());
 
