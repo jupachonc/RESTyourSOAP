@@ -16,7 +16,6 @@ public class WSDLToOpenAPI extends XMLParserBaseListener {
          /*
             Information
          */
-
         LinkedHashMap<String, Object> info = new LinkedHashMap<>();
         info.put("title", apiDefinition.get("title"));
         info.put("version", "0.0.1");
@@ -96,10 +95,12 @@ public class WSDLToOpenAPI extends XMLParserBaseListener {
     private Boolean insideElement = false;
     private Boolean insidePortType = false;
     private Boolean insideOperation = false;
+    private Boolean insideComplexType = false;
     private String mainElement = "";
     private String operationName = "";
     private LinkedHashMap<String, Object> messagesMap = new LinkedHashMap<>();
     private String message = "";
+    private String lastElement = "";
 
     private String getTagType(String tag) {
         List<String> tagTypes = Arrays.asList("types", "message", "portType", "binding", "definitions",
@@ -126,11 +127,14 @@ public class WSDLToOpenAPI extends XMLParserBaseListener {
         insideElement = true;
         String name = (String) mapAttributes(ctx.attribute()).get("name");
         mainElement = name;
+        HashMap<String, Object> element = new HashMap<>();
+        element.put("type", "object");
+        element.put("properties", new HashMap<>());
         if (apiDefinition.containsKey("elements")) {
-            ((HashMap<String, Object>) apiDefinition.get("elements")).put(name, new HashMap<>());
+            ((HashMap<String, Object>) apiDefinition.get("elements")).put(name, element);
         } else {
             HashMap<String, Object> elements = new HashMap<>();
-            elements.put(name, new HashMap<>());
+            elements.put(name, element);
             apiDefinition.put("elements", elements);
         }
     }
@@ -162,7 +166,7 @@ public class WSDLToOpenAPI extends XMLParserBaseListener {
                             break;
                         case "float":
                             newContent = "number";
-                            format = "\nformat: float";
+                            format = "\n" + "format: float";
                             break;
                         case "boolean":
                             newContent = "integer";
@@ -269,8 +273,13 @@ public class WSDLToOpenAPI extends XMLParserBaseListener {
                 if (insideType && insideSchema) {
                     if (mapAttributes(ctx.attribute()).containsKey("name") && !insideElement) {
                         SaveMainElement(ctx);
-                    } else if (mapAttributes(ctx.attribute()).containsKey("name") && insideElement) {
-                        //TODO: Ver si esto se debe poner o no
+                    } else if (!mapAttributes(ctx.attribute()).containsKey("name") && insideElement) {
+                        Set elementList = ((HashMap<String, Object>) ((HashMap<String, Object>) ((HashMap<String, Object>) apiDefinition.get("elements")).get(mainElement)).get("properties")).keySet();
+                        if (!elementList.isEmpty()) {
+                            insideComplexType = true;
+                            ((HashMap<String, Object>) ((HashMap<String, Object>) ((HashMap<String, Object>) ((HashMap<String, Object>) apiDefinition.get("elements")).get(mainElement)).get("properties")).get(lastElement)).put("type", "object");
+                            ((HashMap<String, Object>) ((HashMap<String, Object>) ((HashMap<String, Object>) ((HashMap<String, Object>) apiDefinition.get("elements")).get(mainElement)).get("properties")).get(lastElement)).put("properties", new HashMap<>());
+                        }
                     }
                 }
                 break;
@@ -280,13 +289,25 @@ public class WSDLToOpenAPI extends XMLParserBaseListener {
                         SaveMainElement(ctx);
                     } else {
                         HashMap<String, Object> elementAttributes = mapAttributes(ctx.attribute());
-                        StringBuilder inElement = new StringBuilder();
+                        HashMap<String, Object> inElement = new HashMap<>();
                         for (String attribute : elementAttributes.keySet()) {
                             if (!Objects.equals(attribute, "name")) {
-                                inElement.append(reformatAttributes(attribute, (String) elementAttributes.get(attribute))).append("\n");
+                                String[] attrs = reformatAttributes(attribute, (String) elementAttributes.get(attribute)).split("\n");
+                                for (String newAttr:attrs){
+                                    if (!Objects.equals(newAttr, "")){
+                                        String[] thisAttr = newAttr.split(":");
+                                        inElement.put(thisAttr[0], thisAttr[1]);
+                                    }
+                                }
                             }
                         }
-                        ((HashMap<String, Object>) ((HashMap<String, Object>) apiDefinition.get("elements")).get(mainElement)).put((String) elementAttributes.get("name"), inElement);
+                        if(!insideComplexType){
+                            lastElement = (String) elementAttributes.get("name");
+                            ((HashMap<String, Object>) ((HashMap<String, Object>) ((HashMap<String, Object>) apiDefinition.get("elements")).get(mainElement)).get("properties")).put((String) elementAttributes.get("name"), inElement);
+                        }
+                        else{
+                            ((HashMap<String, Object>) ((HashMap<String, Object>) ((HashMap<String, Object>) ((HashMap<String, Object>) ((HashMap<String, Object>) apiDefinition.get("elements")).get(mainElement)).get("properties")).get(lastElement)).get("properties")).put((String) elementAttributes.get("name"), inElement);
+                        }
                     }
                 }
                 break;
