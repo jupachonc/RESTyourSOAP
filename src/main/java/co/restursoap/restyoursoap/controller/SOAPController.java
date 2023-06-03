@@ -4,6 +4,7 @@ import co.restursoap.restyoursoap.service.SOAPservice;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
 import org.javatuples.Pair;
+import org.javatuples.Triplet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -76,7 +77,7 @@ public class SOAPController {
                            HttpServletResponse response)
             throws IOException{
         String xml = convertInputStreamToString(multipartFile.getInputStream());
-        Pair<String, String> out = sService.getProject(xml);
+        Triplet<String, String, String> out = sService.getProject(xml);
 
         String headerValue = "attachment; filename=\"" + out.getValue0() + ".zip" + "\"";
 
@@ -95,7 +96,7 @@ public class SOAPController {
         project.closeEntry();
 
         // Create index.js
-        byte[] indexjs = out.getValue1().getBytes();
+        byte[] indexjs = out.getValue2().getBytes();
         ZipEntry indexEntry = new ZipEntry("index.js");
         project.putNextEntry(indexEntry);
         project.write(indexjs, 0, indexjs.length);

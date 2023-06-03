@@ -81,6 +81,31 @@ public class WSDLToOpenAPI extends XMLParserBaseListener {
         return pjson.toString(2);
     }
 
+    public String getJS(){
+        StringBuilder code = new StringBuilder();
+
+        code.append("//Initialize express app\n");
+        code.append("var express = require('express')\n");
+        code.append("var app = express()\n");
+        code.append("app.use(express.json())\n\n");
+        code.append("var port = process.env.PORT || 8080\n\n");
+
+        for(String path: ((HashMap<String, Object>) apiDefinition.get("paths")).keySet()){
+            for(String method: ((HashMap<String, Object>) ((HashMap<?, ?>) apiDefinition.get("paths")).get(path)).keySet()){
+                code.append("app.");
+                code.append(method);
+                code.append("('");
+                code.append(path);
+                code.append("', function(req, res) {\n\t//TODO\n\t//Implement your Method Here");
+                code.append("\n})\n\n");
+
+            }
+        }
+        code.append("app.listen(port, () => console.log(`Listening on Port: ${port}`))\n");
+
+        return code.toString();
+    }
+
     public String getServiceName() {
         return (String) apiDefinition.get("title");
     }
@@ -217,7 +242,7 @@ public class WSDLToOpenAPI extends XMLParserBaseListener {
             case "operation":
                 if (insidePortType) {
                     insideOperation = true;
-                    operationName = (String) mapAttributes(ctx.attribute()).get("name");
+                    operationName = "/" + mapAttributes(ctx.attribute()).get("name");
                     if (apiDefinition.containsKey("paths")) {
                         ((HashMap<String, Object>) apiDefinition.get("paths")).put(operationName, new HashMap<>());
                     } else {
