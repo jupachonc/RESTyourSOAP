@@ -71,8 +71,12 @@ public class WSDLToOpenAPI extends XMLParserBaseListener {
             Depedencies
          */
          LinkedHashMap<String, String> dependencies = new LinkedHashMap<>();
+         dependencies.put("express", "^4.18.2");
+         pMap.put("dependencies", dependencies);
+
+         // Generate Output JSOn
          JSONObject pjson = new JSONObject(pMap);
-         return pjson.toString();
+         return pjson.toString(2);
      }
 
      public String getServiceName(){
