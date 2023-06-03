@@ -29,7 +29,29 @@ public class SOAPservice {
         // Walk the tree created during the parse, trigger callbacks
         walker.walk(translator, tree);
 
-        return new Pair<>(translator.getServiceName(), translator.getOutput());
+        return new Pair<>(translator.getServiceName(), translator.getOutput(true));
+
+    }
+
+    public Pair<String, String> translateToOpenAPIJSON(String wsdl){
+        // Generate Lexer from WSDL String
+        XMLLexer baseLexer = new XMLLexer(CharStreams.fromString(wsdl));
+
+        // Create a buffer of tokens pulled from lexer
+        CommonTokenStream tokens = new CommonTokenStream(baseLexer);
+
+        // Create a parser that feeds oof the tokens buffer
+        XMLParser baseParser = new XMLParser(tokens);
+        ParseTree tree = baseParser.document(); // Init rule
+
+        // Create a generic parseTree Walker can trigger callbacks
+        ParseTreeWalker walker = new ParseTreeWalker();
+        WSDLToOpenAPI translator = new WSDLToOpenAPI();
+
+        // Walk the tree created during the parse, trigger callbacks
+        walker.walk(translator, tree);
+
+        return new Pair<>(translator.getServiceName(), translator.getOutput(false));
 
     }
 
