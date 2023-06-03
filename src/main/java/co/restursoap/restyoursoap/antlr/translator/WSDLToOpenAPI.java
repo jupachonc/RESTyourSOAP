@@ -9,9 +9,9 @@ public class WSDLToOpenAPI extends XMLParserBaseListener {
      public String getOutput(){
 
          return "openapi: \"3.0.0\"\n"
-                 + "info:\n\tname: " + apiDefinition.get("title") + "\n\tversion: 0.0.1" +
+                 + "info:\n  title: " + apiDefinition.get("title") + "\n  version: 0.0.1" +
                  "\nservers:\n" + listServers((HashSet<String>) apiDefinition.get("servers")) +
-                 "\n components:\n\tschemas:\n" + listElements((HashMap<String,Object>) apiDefinition.get("elements"));
+                 "\n components:\n  schemas:\n" + listElements((HashMap<String,Object>) apiDefinition.get("elements"));
      }
 
      public String getServiceName(){
@@ -31,16 +31,16 @@ public class WSDLToOpenAPI extends XMLParserBaseListener {
     private String listServers(HashSet<String> list){
         StringBuilder out = new StringBuilder();
         for(String url:list){
-            out.append("\t- url: ").append(url).append("\n");
+            out.append("  - url: ").append(url).append("\n");
         }
         return out.toString();
     }
     private String listElements(HashMap<String,Object> list){
         StringBuilder out = new StringBuilder();
         for(String name:list.keySet()){
-            out.append("\t\t").append(name).append(":\n\t\t\ttype: object\n\t\t\tproperties:\n");
+            out.append("    ").append(name).append(":\n      type: object\n      properties:\n");
             for(String element:((HashMap<String,Object>) list.get(name)).keySet()){
-                out.append("\t\t\t\t").append(element).append(": \n\t\t\t\t\t").append(((HashMap<String,Object>) list.get(name)).get(element)).append("\n");
+                out.append("        ").append(element).append(": \n        ").append(((HashMap<String,Object>) list.get(name)).get(element)).append("\n");
             }
         }
         return out.toString();
