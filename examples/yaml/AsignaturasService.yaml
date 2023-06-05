@@ -1,0 +1,32 @@
+openapi: 3.0.0
+info:
+  title: AsignaturasService
+  version: 0.0.1
+servers:
+- url: http://localhost:3000/soap/asignaturas
+components:
+  schemas:
+    GetAsignaturas:
+      type: object
+      properties:
+        codigo_asignatura:
+          minimum: ' 0'
+    GetAsignaturasResponse:
+      type: object
+      properties:
+        GetAsignaturasResult:
+          minimum: ' 0'
+paths:
+  /GetAsignaturas:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetAsignaturas'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetAsignaturasResponse'

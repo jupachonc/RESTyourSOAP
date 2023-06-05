@@ -1,0 +1,214 @@
+{
+  "components": {
+    "schemas": {
+      "Add": {
+        "type": "object",
+        "properties": {
+          "intB": {
+            "type": "integer",
+            "maximum": " 1",
+            "minimum": " 1"
+          },
+          "intA": {
+            "type": "integer",
+            "maximum": " 1",
+            "minimum": " 1"
+          }
+        }
+      },
+      "Divide": {
+        "type": "object",
+        "properties": {
+          "intB": {
+            "type": "integer",
+            "maximum": " 1",
+            "minimum": " 1"
+          },
+          "intA": {
+            "type": "integer",
+            "maximum": " 1",
+            "minimum": " 1"
+          }
+        }
+      },
+      "MultiplyResponse": {
+        "type": "object",
+        "properties": {
+          "MultiplyResult": {
+            "type": "integer",
+            "maximum": " 1",
+            "minimum": " 1"
+          }
+        }
+      },
+      "DivideResponse": {
+        "type": "object",
+        "properties": {
+          "DivideResult": {
+            "type": "integer",
+            "maximum": " 1",
+            "minimum": " 1"
+          }
+        }
+      },
+      "SubtractResponse": {
+        "type": "object",
+        "properties": {
+          "SubtractResult": {
+            "type": "integer",
+            "maximum": " 1",
+            "minimum": " 1"
+          }
+        }
+      },
+      "Multiply": {
+        "type": "object",
+        "properties": {
+          "intB": {
+            "type": "integer",
+            "maximum": " 1",
+            "minimum": " 1"
+          },
+          "intA": {
+            "type": "integer",
+            "maximum": " 1",
+            "minimum": " 1"
+          }
+        }
+      },
+      "Subtract": {
+        "type": "object",
+        "properties": {
+          "intB": {
+            "type": "integer",
+            "maximum": " 1",
+            "minimum": " 1"
+          },
+          "intA": {
+            "type": "integer",
+            "maximum": " 1",
+            "minimum": " 1"
+          }
+        }
+      },
+      "AddResponse": {
+        "type": "object",
+        "properties": {
+          "AddResult": {
+            "type": "integer",
+            "maximum": " 1",
+            "minimum": " 1"
+          }
+        }
+      }
+    }
+  },
+  "servers": [
+    {
+      "url": "http://www.dneonline.com/calculator.asmx"
+    }
+  ],
+  "openapi": "3.0.0",
+  "paths": {
+    "/Multiply": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Multiply"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MultiplyResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Add": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Add"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AddResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Divide": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Divide"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DivideResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Subtract": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Subtract"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubtractResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "info": {
+    "title": "Calculator",
+    "version": "0.0.1"
+  }
+}

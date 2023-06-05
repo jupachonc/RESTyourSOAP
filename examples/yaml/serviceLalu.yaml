@@ -1,0 +1,36 @@
+openapi: 3.0.0
+info:
+  title: MessageSplitterService
+  version: 0.0.1
+servers:
+- url: https://lalu-soap-dot-lalu-storage.uc.r.appspot.com/wsdl
+components:
+  schemas:
+    Response:
+      type: object
+      properties:
+        result:
+          maximum: ' 1'
+          type: string
+          minimum: ' 1'
+    Request:
+      type: object
+      properties:
+        id:
+          maximum: ' 1'
+          type: string
+          minimum: ' 1'
+paths:
+  /MessageSplitter:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Request'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'

@@ -1,0 +1,39 @@
+openapi: 3.0.0
+info:
+  title: MessageSplitterService
+  version: 0.0.1
+servers:
+- url: http://localhost:8000/wsdl
+components:
+  schemas:
+    MessageSplitterResponse:
+      type: object
+      properties:
+        result:
+          type: string
+          minimum: ' 1'
+    MessageSplitterRequest:
+      type: object
+      properties:
+        message:
+          maximum: ' 1'
+          type: string
+          minimum: ' 1'
+        splitter:
+          maximum: ' 1'
+          type: string
+          minimum: ' 1'
+paths:
+  /MessageSplitter:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MessageSplitterRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageSplitterResponse'

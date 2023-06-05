@@ -1,0 +1,66 @@
+{
+  "components": {
+    "schemas": {
+      "MessageSplitterResponse": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "string",
+            "minimum": " 1"
+          }
+        }
+      },
+      "MessageSplitterRequest": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "maximum": " 1",
+            "minimum": " 1"
+          },
+          "splitter": {
+            "type": "string",
+            "maximum": " 1",
+            "minimum": " 1"
+          }
+        }
+      }
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8000/wsdl"
+    }
+  ],
+  "openapi": "3.0.0",
+  "paths": {
+    "/MessageSplitter": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MessageSplitterRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageSplitterResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "info": {
+    "title": "MessageSplitterService",
+    "version": "0.0.1"
+  }
+}

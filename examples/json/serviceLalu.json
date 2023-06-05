@@ -1,0 +1,62 @@
+{
+  "components": {
+    "schemas": {
+      "Response": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "string",
+            "maximum": " 1",
+            "minimum": " 1"
+          }
+        }
+      },
+      "Request": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "maximum": " 1",
+            "minimum": " 1"
+          }
+        }
+      }
+    }
+  },
+  "servers": [
+    {
+      "url": "https://lalu-soap-dot-lalu-storage.uc.r.appspot.com/wsdl"
+    }
+  ],
+  "openapi": "3.0.0",
+  "paths": {
+    "/MessageSplitter": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Request"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "info": {
+    "title": "MessageSplitterService",
+    "version": "0.0.1"
+  }
+}

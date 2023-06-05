@@ -1,0 +1,72 @@
+openapi: 3.0.0
+info:
+  title: MessageSplitterService
+  version: 0.0.1
+servers:
+- url: http://uncademy-interface.default.svc.uncademy.public:8000/wsdl
+components:
+  schemas:
+    Response:
+      type: object
+      properties:
+        courseName:
+          maximum: ' 1'
+          type: string
+          minimum: ' 1'
+        gradesList:
+          type: object
+          minimum: ' 1'
+          properties:
+            student_name:
+              maximum: ' 1'
+              type: string
+              minimum: ' 1'
+            reason:
+              maximum: ' 1'
+              type: string
+              minimum: ' 0'
+            absences:
+              maximum: ' 1'
+              type: integer
+              minimum: ' 1'
+            approved:
+              maximum: ' 1'
+              type: string
+              minimum: ' 1'
+            group_id:
+              maximum: ' 1'
+              type: string
+              minimum: ' 1'
+            final_grade:
+              maximum: ' 1'
+              type: string
+              minimum: ' 1'
+        teacherName:
+          maximum: ' 1'
+          type: string
+          minimum: ' 1'
+        currentDate:
+          maximum: ' 1'
+          type: string
+          minimum: ' 1'
+    Request:
+      type: object
+      properties:
+        id:
+          maximum: ' 1'
+          type: integer
+          minimum: ' 1'
+paths:
+  /MessageSplitter:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Request'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
